@@ -48,10 +48,16 @@ def data_loading():
     X_test = test_df.to_numpy()
 
     # we have to convert the strings to unique integers
+
     X_train[X_train == 'winter'] = 1
     X_train[X_train == 'spring'] = 2
     X_train[X_train == 'summer'] = 3
     X_train[X_train == 'autumn'] = 4
+
+    X_test[X_test == 'winter'] = 1
+    X_test[X_test == 'spring'] = 2
+    X_test[X_test == 'summer'] = 3
+    X_test[X_test == 'autumn'] = 4
 
     # Simple imputer
     #imputer = SimpleImputer(missing_values = np.nan)
@@ -63,12 +69,14 @@ def data_loading():
     imputer = KNNImputer(n_neighbors=2)
 
     X_train = imputer.fit_transform(X_train)
+    X_test = imputer.fit_transform(X_test)
     y_train = imputer.fit_transform(y_train.reshape(-1,1))
     y_train = y_train.reshape(-1) # we have to 'reshape back' to 1D
 
     # check the imputed values
-    print(X_train)
-    print(y_train)
+    #print(X_train)
+    #print(y_train)
+    #print(X_test)
 
     assert (X_train.shape[1] == X_test.shape[1]) and (X_train.shape[0] == y_train.shape[0]) and (X_test.shape[0] == 100), "Invalid data shape"
     return X_train, y_train, X_test
