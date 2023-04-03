@@ -4,9 +4,15 @@
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
+from sklearn import preprocessing
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.impute import KNNImputer
+from sklearn.ensemble import ExtraTreesRegressor
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.kernel_ridge import KernelRidge
+# Polynomial
+from sklearn.gaussian_process.kernels import DotProduct, RBF, Matern, RationalQuadratic
 
 def data_loading():
     """
@@ -63,10 +69,10 @@ def data_loading():
     #imputer = SimpleImputer(missing_values = np.nan)
 
     # Iterative imputer
-    #imputer = IterativeImputer(random_state=0)
+    imputer = IterativeImputer(estimator=ExtraTreesRegressor(), random_state=0)
 
     # KNN imputer
-    imputer = KNNImputer(n_neighbors=2)
+    #imputer = KNNImputer(n_neighbors=2)
 
     X_train = imputer.fit_transform(X_train)
     X_test = imputer.fit_transform(X_test)
@@ -77,6 +83,9 @@ def data_loading():
     #print(X_train)
     #print(y_train)
     #print(X_test)
+
+    #X_train = preprocessing.StandardScaler().fit_transform(X_train)
+    #X_test = preprocessing.StandardScaler().fit_transform(X_test)
 
     assert (X_train.shape[1] == X_test.shape[1]) and (X_train.shape[0] == y_train.shape[0]) and (X_test.shape[0] == 100), "Invalid data shape"
     return X_train, y_train, X_test
@@ -98,6 +107,15 @@ def modeling_and_prediction(X_train, y_train, X_test):
 
     y_pred=np.zeros(X_test.shape[0])
     #TODO: Define the model and fit it using training data. Then, use test data to make predictions
+
+    gpr = GaussianProcessRegressor(kernel=DotProduct())
+    gpr = GaussianProcessRegressor(kernel=RBF())
+    gpr = GaussianProcessRegressor(kernel=Matern())
+    gpr = GaussianProcessRegressor(kernel=RationalQuadratic())
+
+    gpr.fit(X_train, y_train)
+
+    y_pred = gpr.predict(X_test)
 
     assert y_pred.shape == (100,), "Invalid data shape"
     return y_pred
