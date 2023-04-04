@@ -3,6 +3,11 @@
 # First, we import necessary libraries:
 import numpy as np
 import pandas as pd
+from sklearn.impute import SimpleImputer
+from sklearn import preprocessing
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+from sklearn.impute import KNNImputer
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.kernel_ridge import KernelRidge
 # Polynomial
@@ -42,15 +47,36 @@ def data_loading():
     X_test = np.zeros_like(test_df)
     
     # TODO: Perform data preprocessing, imputation and extract X_train, y_train and X_test
-    countries = train_df.columns.values.tolist()
-    for counNum, counName in enumerate(countries[1:]):
-        if counName == 'price_CHF':
-            y_train = train_df[counName].fillna(train_df[counName].mean())  
-        else:
-            X_train[:,counNum] = train_df[counName].fillna(train_df[counName].mean())  
-            X_test[:,counNum] = test_df[counName].fillna(test_df[counName].mean())  
-    col = 'price_CHF'
-    train_df[col] = train_df[col].fillna(train_df[col].mean()) 
+    X_train=train_df.drop(['price_CHF'], axis=1).to_numpy()
+    y_train=train_df['price_CHF'].to_numpy()
+    X_test=test_df.to_numpy()
+    
+    X_train[X_train == 'winter'] = 1
+    X_train[X_train == 'spring'] = 2
+    X_train[X_train == 'summer'] = 3
+    X_train[X_train == 'autumn'] = 4
+
+    X_test[X_test == 'winter'] = 1
+    X_test[X_test == 'spring'] = 2
+    X_test[X_test == 'summer'] = 3
+    X_test[X_test == 'autumn'] = 4
+    # Simple imputer
+    # imputer = SimpleImputer(missing_values = np.nan)
+    
+    # Iterative imputer
+    # imputer = IterativeImputer(random_state=1)
+    
+    # KNN imputer
+    imputer=KNNImputer(n_neighbors=3)
+    
+    X_train = imputer.fit_transform(X_train)
+    X_test = imputer.fit_transform(X_test)
+    y_train = imputer.fit_transform(y_train.reshape(-1,1))
+    y_train = y_train.reshape(-1) # we have to 'reshape back' to 1D
+    
+    # X_train = preprocessing.StandardScaler().fit_transform(X_train)
+    # X_test = preprocessing.StandardScaler().fit_transform(X_test)
+    
     assert (X_train.shape[1] == X_test.shape[1]) and (X_train.shape[0] == y_train.shape[0]) and (X_test.shape[0] == 100), "Invalid data shape"
     return X_train, y_train, X_test
 
@@ -68,23 +94,20 @@ def modeling_and_prediction(X_train, y_train, X_test):
     ----------
     y_test: array of floats: dim = (100,), predictions on test set
     """
-
     y_pred=np.zeros(X_test.shape[0])
     #TODO: Define the model and fit it using training data. Then, use test data to make predictions
-    gpr = GaussianProcessRegressor(kernel=DotProduct())
-    gpr = GaussianProcessRegressor(kernel=RBF())
-    gpr = GaussianProcessRegressor(kernel=Matern())
-    gpr = GaussianProcessRegressor(kernel=RationalQuadratic())
+    # gpr = GaussianProcessRegressor(kernel=DotProduct())
+    # gpr = GaussianProcessRegressor(kernel=RBF())
+    # gpr = GaussianProcessRegressor(kernel=Matern())
+    # gpr = GaussianProcessRegressor(kernel=RationalQuadratic())
 
-    gpr.fit(X_train, y_train)
+    # gpr.fit(X_train, y_train)
+    # y_pred = gpr.predict(X_test)
     
     
-    y_pred = gpr.predict(X_test)
-    
-    
-    # kr = KernelRidge(alpha=1.0, kernel='rbf', gamma=0.1)
-    # kr.fit(X_train, y_train)
-    # y_pred = kr.predict(X_test)
+    kr = KernelRidge(alpha=1.0, kernel='rbf', gamma=0.1)
+    kr.fit(X_train, y_train)
+    y_pred = kr.predict(X_test)
 
     
     

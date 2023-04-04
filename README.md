@@ -1,10 +1,10 @@
 # IML2023_2
 
-Important: we have 40 submissions, so we should always announce it when we want to try something.
+According to current result, 
+the best imputation method is KNN( with three neighbors )
+and the kernal should be Ridge Regression.
 
-Task division:
 
-1. Imputation (M)
-2. Model selection for prediction (H)
-3. (Hyper)-parameter tuning (K)
-4. Report (M)
+And I suppose we have two direction:
+1. cross validation
+2. RatQuad + Maximizing the evidence of a Bayesian model
